@@ -1,13 +1,13 @@
 {
     "name": "fabs/phalcon_api",
     "type": "library",
-    "description": "Dependency Injection for PHP",
+    "description": "Phalcon REST API Library",
     "keywords": [
-        "php",
-        "di",
-        "dependency injection",
-        "dependency",
-        "injection"
+        "phalcon",
+        "rest",
+        "rest api",
+        "phalcon rest api",
+        "api"
     ],
     "license": "MIT",
     "authors": [
