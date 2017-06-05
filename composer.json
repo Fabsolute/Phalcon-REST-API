@@ -1,5 +1,5 @@
 {
-    "name": "fabs/phalcon_api",
+    "name": "fabs/phalcon-api",
     "type": "library",
     "description": "Phalcon REST API Library",
     "keywords": [
