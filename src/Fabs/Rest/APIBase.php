@@ -11,7 +11,9 @@ namespace Fabs\Rest;
 
 use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
+use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\MapModel;
+use Fabs\Rest\Services\PatchMethodHandler;
 use Fabs\Rest\Services\ServiceBase;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
@@ -30,15 +32,24 @@ abstract class APIBase extends ServiceBase
      */
     protected $mapped_functions = [];
 
+    /**
+     * @var PatchMethodHandler
+     */
+    protected $patch_method_handler = null;
+
     public function __construct()
     {
+        $this->patch_method_handler = new PatchMethodHandler();
+        $this->patch_method_handler->addAllowedOperation(PatchOperations::ADD);
+        $this->patch_method_handler->addAllowedOperation(PatchOperations::REMOVE);
+        $this->patch_method_handler->addAllowedOperation(PatchOperations::REPLACE);
+
         $this->addAllowedMethod(HttpMethods::GET);
         $this->addAllowedMethod(HttpMethods::POST);
         $this->addAllowedMethod(HttpMethods::HEAD);
         $this->addAllowedMethod(HttpMethods::PUT);
         $this->addAllowedMethod(HttpMethods::PATCH);
         $this->addAllowedMethod(HttpMethods::DELETE);
-
 
         $this->map(HttpMethods::GET, '/', 'get');
         $this->map(HttpMethods::POST, '/', 'post');
@@ -149,12 +160,12 @@ abstract class APIBase extends ServiceBase
 
     protected function getPage()
     {
-        return $this->request->get('page', 'int', 0);
+        return $this->request->getQuery('page', 'int', 0);
     }
 
     protected function getPerPage()
     {
-        return $per_page = $this->request->get('per_page', 'int', 0);
+        return $per_page = $this->request->getQuery('per_page', 'int', 0);
     }
 
     /**
@@ -190,5 +201,4 @@ abstract class APIBase extends ServiceBase
     {
         $this->status_code_handler->methodNotAllowed();
     }
-
 }

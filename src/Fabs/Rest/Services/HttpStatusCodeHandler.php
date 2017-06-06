@@ -28,9 +28,11 @@ class HttpStatusCodeHandler extends ServiceBase
             $error_content['error_list'] = $error_list;
         }
 
-        $this->response
-            ->setStatusCode($error_code)
-            ->setJsonContent($error_content)->send();
+        if (!$this->response->isSent()) {
+            $this->response
+                ->setStatusCode($error_code)
+                ->setJsonContent($error_content)->send();
+        }
     }
 
     public function notFound($error_list = null)
