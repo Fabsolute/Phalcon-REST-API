@@ -135,8 +135,8 @@ class PatchHandler extends ServiceBase
     private function isValidPath($path)
     {
         return strpos($path, '/') === 0 &&
-        substr($path, strlen($path) - 1) != '/' &&
-        strpos($path, '//') === false;
+            substr($path, strlen($path) - 1) != '/' &&
+            strpos($path, '//') === false;
     }
 
     /**
@@ -161,6 +161,15 @@ class PatchHandler extends ServiceBase
 
     private function merge($array_of_array)
     {
-        return call_user_func_array('array_merge_recursive', $array_of_array);
+        if (count($array_of_array) > 1)
+        {
+            return call_user_func_array('array_merge_recursive', $array_of_array);
+        } else if (count($array_of_array) === 1)
+        {
+            return $array_of_array[0];
+        } else
+        {
+            return [];
+        }
     }
 }
