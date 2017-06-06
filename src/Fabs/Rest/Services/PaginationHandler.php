@@ -29,4 +29,14 @@ class PaginationHandler extends ServiceBase
     {
         $this->total_count = $total_count;
     }
+
+    public function getPage()
+    {
+        return $this->request->getQuery('page', 'int', 0);
+    }
+
+    public function getPerPage()
+    {
+        return $per_page = $this->request->getQuery('per_page', 'int', 0);
+    }
 }

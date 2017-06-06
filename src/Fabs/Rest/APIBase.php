@@ -158,16 +158,6 @@ abstract class APIBase extends ServiceBase
         return $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
     }
 
-    protected function getPage()
-    {
-        return $this->request->getQuery('page', 'int', 0);
-    }
-
-    protected function getPerPage()
-    {
-        return $per_page = $this->request->getQuery('per_page', 'int', 0);
-    }
-
     /**
      * @param $cache_key string
      * @return string
