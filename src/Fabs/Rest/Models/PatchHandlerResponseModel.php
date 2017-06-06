@@ -24,29 +24,40 @@ class PatchHandlerResponseModel extends SerializableObject
 
     public function apply($subject)
     {
-        $output = false;
-
         if ($this->add_operation_model instanceof PatchModelBase) {
             $output = $this->add_operation_model->applyAddOperation($subject);
+            if ($output === false)
+            {
+                return false;
+            }
         }
 
-        if ($output === true) {
-            if ($this->remove_operation_model instanceof PatchModelBase) {
-                $output = $this->remove_operation_model->applyRemoveOperation($subject);
+        if ($this->remove_operation_model instanceof PatchModelBase) {
+            $output = $this->remove_operation_model->applyRemoveOperation($subject);
+            if ($output === false)
+            {
+                return false;
             }
         }
-        if ($output === true) {
-            if ($this->replace_operation_model instanceof PatchModelBase) {
-                $output = $this->replace_operation_model->applyReplaceOperation($subject);
+
+        if ($this->replace_operation_model instanceof PatchModelBase) {
+            $output = $this->replace_operation_model->applyReplaceOperation($subject);
+            if ($output === false)
+            {
+                return false;
             }
         }
+
         foreach ($this->custom_operation_models as $operation => $custom_operation_model) {
-            if ($output === true) {
-                if ($custom_operation_model instanceof PatchModelBase) {
-                    $output = $custom_operation_model->applyCustomOperation($operation, $subject);
+            if ($custom_operation_model instanceof PatchModelBase) {
+                $output = $custom_operation_model->applyCustomOperation($operation, $subject);
+                if ($output === false)
+                {
+                    return false;
                 }
             }
         }
-        return $output;
+
+        return true;
     }
 }
