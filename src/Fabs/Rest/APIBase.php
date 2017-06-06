@@ -153,20 +153,6 @@ abstract class APIBase extends ServiceBase
 
     }
 
-    public function getETag()
-    {
-        return $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
-    }
-
-    /**
-     * @param $cache_key string
-     * @return string
-     */
-    protected function makeCacheKey($cache_key)
-    {
-        return $cache_key . '_' . $this->getPage() . '_' . $this->getPerPage();
-    }
-
     /**
      * @param string $method
      * @return APIBase

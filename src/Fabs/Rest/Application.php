@@ -157,7 +157,7 @@ class Application extends Micro
                     $this->pagination_handler->setHeaders();
                     $e_tag = strtoupper(md5(json_encode($content)));
                     $this->response->setHeader(HttpHeaders::ETAG, $e_tag);
-                    $if_none_match = $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
+                    $if_none_match = $this->getETag();
 
                     if ($if_none_match == $e_tag) {
                         $is_not_modified = true;
@@ -207,5 +207,10 @@ class Application extends Micro
             'cache' => BackendInterface::class,
             'pagination_handler' => PaginationHandler::class
         ];
+    }
+
+    public function getETag()
+    {
+        return $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
     }
 }
