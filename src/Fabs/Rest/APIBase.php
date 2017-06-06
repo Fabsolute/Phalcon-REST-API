@@ -35,14 +35,14 @@ abstract class APIBase extends ServiceBase
     /**
      * @var PatchHandler
      */
-    protected $patch_method_handler = null;
+    protected $patch_handler = null;
 
     public function __construct()
     {
-        $this->patch_method_handler = new PatchHandler();
-        $this->patch_method_handler->addAllowedOperation(PatchOperations::ADD);
-        $this->patch_method_handler->addAllowedOperation(PatchOperations::REMOVE);
-        $this->patch_method_handler->addAllowedOperation(PatchOperations::REPLACE);
+        $this->patch_handler = new PatchHandler();
+        $this->patch_handler->addAllowedOperation(PatchOperations::ADD);
+        $this->patch_handler->addAllowedOperation(PatchOperations::REMOVE);
+        $this->patch_handler->addAllowedOperation(PatchOperations::REPLACE);
 
         $this->addAllowedMethod(HttpMethods::GET);
         $this->addAllowedMethod(HttpMethods::POST);
