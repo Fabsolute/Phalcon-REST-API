@@ -13,7 +13,7 @@ use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
 use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\MapModel;
-use Fabs\Rest\Services\PatchMethodHandler;
+use Fabs\Rest\Services\PatchHandler;
 use Fabs\Rest\Services\ServiceBase;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
@@ -33,13 +33,13 @@ abstract class APIBase extends ServiceBase
     protected $mapped_functions = [];
 
     /**
-     * @var PatchMethodHandler
+     * @var PatchHandler
      */
     protected $patch_method_handler = null;
 
     public function __construct()
     {
-        $this->patch_method_handler = new PatchMethodHandler();
+        $this->patch_method_handler = new PatchHandler();
         $this->patch_method_handler->addAllowedOperation(PatchOperations::ADD);
         $this->patch_method_handler->addAllowedOperation(PatchOperations::REMOVE);
         $this->patch_method_handler->addAllowedOperation(PatchOperations::REPLACE);

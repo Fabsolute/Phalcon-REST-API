@@ -11,28 +11,20 @@ namespace Fabs\Rest\Services;
 
 use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\PatchDataModel;
+use Fabs\Rest\Models\PatchHandlerResponseModel;
 use Fabs\Serialize\SerializableObject;
-use Fabs\Serialize\Validation\ValidationException;
 
-class PatchMethodHandler extends ServiceBase
+class PatchHandler extends ServiceBase
 {
     /** @var string[] */
     private $allowed_operations = [];
-    /** @var SerializableObject[]|array */
-    private $add_operations = [];
-    /** @var SerializableObject[]|array */
-    private $remove_operations = [];
-    /** @var SerializableObject[]|array */
-    private $replace_operations = [];
-    /** @var SerializableObject[][]|array */
-    private $custom_operations = [];
 
     /** @var string */
     private $update_model_type = null;
 
     /**
      * @param string $operation
-     * @return PatchMethodHandler
+     * @return PatchHandler
      */
     public function addAllowedOperation($operation)
     {
@@ -42,7 +34,7 @@ class PatchMethodHandler extends ServiceBase
 
     /**
      * @param string $operation
-     * @return PatchMethodHandler
+     * @return PatchHandler
      */
     public function removeAllowedOperation($operation)
     {
@@ -50,24 +42,37 @@ class PatchMethodHandler extends ServiceBase
         return $this;
     }
 
+    /**
+     * @param string $update_model_type
+     * @return PatchHandler
+     */
     public function setUpdateModelType($update_model_type)
     {
         if (is_subclass_of($update_model_type, SerializableObject::class)) {
             $this->update_model_type = $update_model_type;
+            return $this;
         }
         throw new \InvalidArgumentException('update_model_type must instance of SerializableObject');
     }
 
+    /**
+     * @return PatchHandlerResponseModel
+     */
     public function handle()
     {
         $request_data = $this->application->getRequestData();
         /** @var PatchDataModel[] $patch_data_list */
         $patch_data_list = PatchDataModel::deserialize($request_data, true);
 
+        $add_operations = [];
+        $remove_operations = [];
+        $replace_operations = [];
+        $custom_operations = [];
+
         foreach ($patch_data_list as $patch_data) {
             if ($patch_data == null) {
                 $this->status_code_handler->unprocessableEntity(['error' => 'Invalid body for PATCH']);
-                return false;
+                return null;
             }
 
             if (!in_array($patch_data->op, $this->allowed_operations, true)) {
@@ -75,7 +80,7 @@ class PatchMethodHandler extends ServiceBase
                     'error' => 'op not allowed',
                     'value' => $patch_data->op
                 ]);
-                return false;
+                return null;
             }
 
             if (!$this->isValidPath($patch_data->path)) {
@@ -83,72 +88,48 @@ class PatchMethodHandler extends ServiceBase
                     'error' => 'Invalid path for PATCH',
                     'value' => $patch_data->path
                 ]);
-                return false;
+                return null;
             }
 
-            $patch_data_value = $this->patchDataToArray($patch_data->value);
-            if ($this->update_model_type != null) {
-                try {
-                    $patch_data_value = SerializableObject::create($patch_data_value, $this->update_model_type);
-                } catch (ValidationException $exception) {
-                    $this->status_code_handler->unprocessableEntity([
-                        'error' => 'Incompatible path and/or value',
-                        'path' => $patch_data->path,
-                        'value' => $patch_data->value,
-                        'expected' => $exception->getValidatorName(),
-                        'property' => $exception->getPropertyName()
-                    ]);
-                }
-            }
+            $patch_data_value = $this->patchDataToArray($patch_data);
 
             switch ($patch_data->op) {
                 case PatchOperations::ADD:
-                    $this->add_operations[] = $patch_data_value;
+                    $add_operations[] = $patch_data_value;
                     break;
                 case PatchOperations::REMOVE:
-                    $this->remove_operations[] = $patch_data_value;
+                    $remove_operations[] = $patch_data_value;
                     break;
                 case PatchOperations::REPLACE:
-                    $this->replace_operations[] = $patch_data_value;
+                    $replace_operations[] = $patch_data_value;
                     break;
                 default:
-                    $this->custom_operations[$patch_data->op][] = $patch_data_value;
+                    $custom_operations[$patch_data->op][] = $patch_data_value;
                     break;
             }
         }
-        return true;
-    }
 
-    /**
-     * @return array|\Fabs\Serialize\SerializableObject[]
-     */
-    public function getAddOperations()
-    {
-        return $this->add_operations;
-    }
+        $add_operation_data = $this->merge($add_operations);
+        $remove_operation_data = $this->merge($remove_operations);
+        $replace_operation_data = $this->merge($replace_operations);
+        $custom_operations_data = $this->merge($custom_operations);
 
-    /**
-     * @return array|\Fabs\Serialize\SerializableObject[]
-     */
-    public function getRemoveOperations()
-    {
-        return $this->remove_operations;
-    }
+        if ($this->update_model_type != null) {
+            $add_operation_data = SerializableObject::create($add_operation_data, $this->update_model_type);
+            $remove_operation_data = SerializableObject::create($remove_operation_data, $this->update_model_type);
+            $replace_operation_data = SerializableObject::create($replace_operation_data, $this->update_model_type);
+            foreach ($custom_operations_data as $key => $value) {
+                $custom_operations_data[$key] = SerializableObject::create($value, $this->update_model_type);
+            }
+        }
 
-    /**
-     * @return array|\Fabs\Serialize\SerializableObject[]
-     */
-    public function getReplaceOperations()
-    {
-        return $this->replace_operations;
-    }
+        $patch_handler_response = new PatchHandlerResponseModel();
+        $patch_handler_response->add_operation_model = $add_operation_data;
+        $patch_handler_response->remove_operation_model = $remove_operation_data;
+        $patch_handler_response->replace_operation_model = $replace_operation_data;
+        $patch_handler_response->custom_operation_models = $custom_operations_data;
 
-    /**
-     * @return array|\Fabs\Serialize\SerializableObject[][]
-     */
-    public function getCustomOperations()
-    {
-        return $this->custom_operations;
+        return $patch_handler_response;
     }
 
     private function isValidPath($path)
@@ -176,5 +157,10 @@ class PatchMethodHandler extends ServiceBase
         }
 
         return $array;
+    }
+
+    private function merge($array_of_array)
+    {
+        return call_user_func_array('array_merge_recursive', $array_of_array);
     }
 }
