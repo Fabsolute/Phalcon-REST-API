@@ -20,5 +20,6 @@ class HttpStatusCodes
     const UnprocessableEntity = 'unprocessable_entity';
     const UnsupportedMediaType = 'unsupported_media_type';
     const MethodNotAllowed = 'method_not_allowed';
+    const InternalServerError = 'internal_server_error';
     const Conflict = 'conflict';
 }
