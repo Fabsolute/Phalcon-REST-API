@@ -82,7 +82,12 @@ class HttpStatusCodeHandler extends ServiceBase
     {
         $this->handleError(409, HttpStatusCodes::Conflict, $error_list);
     }
-
+    
+    public function internalServerError($error_list = null)
+    {
+        $this->handleError(500, HttpStatusCodes::InternalServerError, $error_list);
+    }
+    
     public function notModified()
     {
         $this->response->setNotModified()->send();
