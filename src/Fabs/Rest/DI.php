@@ -9,7 +9,7 @@
 namespace Fabs\Rest;
 
 
-use Fabs\Rest\Services\APIHandler;
+use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
 use Fabs\Rest\Services\TooManyRequestHandler;
@@ -21,7 +21,7 @@ use Phalcon\Di\FactoryDefault;
  * Class DI
  * @package Fabs\Rest
  *
- * @property APIHandler api_handler
+ * @property AutoloadHandler autoload_handler
  * @property Application application
  * @property HttpStatusCodeHandler status_code_handler
  * @property TooManyRequestHandler too_many_request_handler
@@ -34,12 +34,16 @@ class DI extends FactoryDefault
     {
         parent::__construct();
 
-        $this->setShared('api_handler', function () {
-            return new APIHandler();
+        $this->setShared('autoload_handler', function () {
+            return new AutoloadHandler();
         });
 
         $this->setShared('application', function () {
-            return new Application($this);
+            if (PHP_SAPI == 'cli') {
+                return new BaseApplication($this);
+            } else {
+                return new Application($this);
+            }
         });
 
         $this->setShared('status_code_handler', function () {

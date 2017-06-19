@@ -17,7 +17,7 @@ use Phalcon\Di\Injectable;
  * Class ServiceBase
  * @package Fabs\Rest\Services
  *
- * @property APIHandler api_handler
+ * @property AutoloadHandler autoload_handler
  * @property Application application
  * @property HttpStatusCodeHandler status_code_handler
  * @property TooManyRequestHandler too_many_request_handler
