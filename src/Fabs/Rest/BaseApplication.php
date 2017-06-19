@@ -9,6 +9,7 @@
 namespace Fabs\Rest;
 
 
+use ErrorException;
 use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
@@ -34,6 +35,8 @@ class BaseApplication extends Micro
         $this->after([$this, 'onAfter']);
         $this->before([$this, 'onBefore']);
         $this->notFound([$this, 'onNotFound']);
+
+        set_error_handler([$this, 'onPHPError']);
         parent::__construct($di);
     }
 
@@ -51,6 +54,11 @@ class BaseApplication extends Micro
     public function onNotFound()
     {
         $this->status_code_handler->notFound();
+    }
+
+    public function onPHPError($error_no, $error_message, $error_file, $error_line)
+    {
+        throw new ErrorException($error_message, 0, $error_no, $error_file, $error_line);
     }
 
     public function handle($uri = null)
