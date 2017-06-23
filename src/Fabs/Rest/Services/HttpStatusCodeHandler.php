@@ -102,4 +102,9 @@ class HttpStatusCodeHandler extends ServiceBase
     {
         $this->response->setStatusCode(201)->send();
     }
+    
+    public function accepted()
+    {
+        $this->response->setStatusCode(202)->send();
+    }
 }
