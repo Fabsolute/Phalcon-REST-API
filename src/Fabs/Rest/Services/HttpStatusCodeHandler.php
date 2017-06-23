@@ -97,4 +97,9 @@ class HttpStatusCodeHandler extends ServiceBase
     {
         $this->response->setStatusCode(200)->send();
     }
+    
+    public function created()
+    {
+        $this->response->setStatusCode(201)->send();
+    }
 }
