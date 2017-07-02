@@ -91,21 +91,26 @@ class AutoloadHandler extends ServiceBase
     {
         $this->registered_folders = array_unique($this->registered_folders);
 
+        $loader = new Loader();
+
         if (count($this->registered_folders) > 0) {
-            $loader = new Loader();
-            $loader->registerNamespaces($this->registered_namespaces)
-                ->registerDirs($this->registered_folders)
-                ->register();
+            $loader->registerDirs($this->registered_folders);
+        }
 
-            foreach ($this->registered_folders as $folder_name) {
-                $this->loadFolderWithNamespace(null, $folder_name);
-                unset($this->registered_folders[$folder_name]);
-            }
+        if (count($this->registered_namespaces) > 0) {
+            $loader->registerNamespaces($this->registered_namespaces);
+        }
 
-            foreach ($this->registered_namespaces as $namespace_name => $folder_name) {
-                $this->loadFolderWithNamespace($namespace_name, $folder_name);
-                unset($this->registered_namespaces[$namespace_name]);
-            }
+        $loader->register();
+
+        foreach ($this->registered_folders as $folder_name) {
+            $this->loadFolderWithNamespace(null, $folder_name);
+            unset($this->registered_folders[$folder_name]);
+        }
+
+        foreach ($this->registered_namespaces as $namespace_name => $folder_name) {
+            $this->loadFolderWithNamespace($namespace_name, $folder_name);
+            unset($this->registered_namespaces[$namespace_name]);
         }
     }
 
