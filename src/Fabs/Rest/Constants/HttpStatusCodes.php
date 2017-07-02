@@ -12,6 +12,8 @@ namespace Fabs\Rest\Constants;
 class HttpStatusCodes
 {
     const Success = 'success';
+    const Created = 'created';
+    const Accepted = 'accepted';
     const Forbidden = 'forbidden';
     const Unauthorized = 'unauthorized';
     const NotFound = 'not_found';
