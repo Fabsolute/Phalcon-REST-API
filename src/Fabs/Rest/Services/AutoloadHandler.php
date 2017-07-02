@@ -97,7 +97,9 @@ class AutoloadHandler extends ServiceBase
                 ->registerDirs($this->registered_folders)
                 ->register();
 
-            foreach ($this->registered_folders as $folder_name) {
+            $register_folders = array_merge($this->registered_folders, array_values($this->registered_namespaces));
+
+            foreach ($register_folders as $folder_name) {
                 $files = glob($folder_name . '/*.php');
                 foreach ($files as $file) {
                     $class_name = basename($file, '.php');
