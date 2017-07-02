@@ -97,29 +97,41 @@ class AutoloadHandler extends ServiceBase
                 ->registerDirs($this->registered_folders)
                 ->register();
 
-            $register_folders = array_merge($this->registered_folders, array_values($this->registered_namespaces));
+            foreach ($this->registered_folders as $folder_name) {
+                $this->loadFolderWithNamespace(null, $folder_name);
+                unset($this->registered_folders[$folder_name]);
+            }
 
-            foreach ($register_folders as $folder_name) {
-                $files = glob($folder_name . '/*.php');
-                foreach ($files as $file) {
-                    $class_name = basename($file, '.php');
-                    if (class_exists($class_name)) {
-                        $reflection = new ReflectionClass($class_name);
-                        if (!$reflection->isAbstract()) {
-                            if (PHP_SAPI == 'cli') {
-                                if ($reflection->isSubclassOf(TaskBase::class)) {
-                                    $this->task_list[] = $class_name;
-                                }
-                            } else {
-                                if ($reflection->isSubclassOf(APIBase::class)) {
-                                    $this->api_list[] = $class_name;
-                                }
-                            }
+            foreach ($this->registered_namespaces as $namespace_name => $folder_name) {
+                $this->loadFolderWithNamespace($namespace_name, $folder_name);
+                unset($this->registered_namespaces[$namespace_name]);
+            }
+        }
+    }
+
+    private function loadFolderWithNamespace($namespace_name, $folder_name)
+    {
+        $files = glob($folder_name . '/*.php');
+        foreach ($files as $file) {
+            $class_name = basename($file, '.php');
+
+            if ($namespace_name !== null) {
+                $class_name = $namespace_name . '\\' . $class_name;
+            }
+
+            if (class_exists($class_name)) {
+                $reflection = new ReflectionClass($class_name);
+                if (!$reflection->isAbstract()) {
+                    if (PHP_SAPI == 'cli') {
+                        if ($reflection->isSubclassOf(TaskBase::class)) {
+                            $this->task_list[] = $class_name;
+                        }
+                    } else {
+                        if ($reflection->isSubclassOf(APIBase::class)) {
+                            $this->api_list[] = $class_name;
                         }
                     }
                 }
-
-                unset($this->registered_folders[$folder_name]);
             }
         }
     }
