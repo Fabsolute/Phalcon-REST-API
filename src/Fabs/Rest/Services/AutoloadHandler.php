@@ -20,11 +20,17 @@ class AutoloadHandler extends ServiceBase
     private $api_list = [];
 
     private $task_list = [];
+    private $registered_namespaces = [];
     private $registered_folders = [];
 
     public function registerFolder($folder_name)
     {
         $this->registered_folders[] = $folder_name;
+    }
+
+    public function registerNamespace($namespace_name, $folder_name)
+    {
+        $this->registered_namespaces[$namespace_name] = $folder_name;
     }
 
     /**
@@ -87,7 +93,9 @@ class AutoloadHandler extends ServiceBase
 
         if (count($this->registered_folders) > 0) {
             $loader = new Loader();
-            $loader->registerDirs($this->registered_folders)->register();
+            $loader->registerNamespaces($this->registered_namespaces)
+                ->registerDirs($this->registered_folders)
+                ->register();
 
             foreach ($this->registered_folders as $folder_name) {
                 $files = glob($folder_name . '/*.php');
