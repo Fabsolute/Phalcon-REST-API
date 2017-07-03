@@ -48,7 +48,7 @@ class Application extends BaseApplication
     {
         if ($this->request_data == null) {
             $this->request_data = $this->request->getJsonRawBody(true);
-            if ($this->request_data === false) {
+            if ($this->request_data === false || !is_array($this->request_data)) {
                 $this->request_data = [];
             }
         }
