@@ -16,4 +16,28 @@ class MapModel extends SerializableObject
     public $url = null;
     public $function_name = null;
     public $method_name = null;
+    /** @var callable */
+    public $before_callable = null;
+    /** @var callable */
+    public $after_callable = null;
+
+    /**
+     * @param callable $before_callable
+     * @return MapModel $this
+     */
+    public function setBeforeAction($before_callable)
+    {
+        $this->before_callable = $before_callable;
+        return $this;
+    }
+
+    /**
+     * @param callable $after_callable
+     * @return MapModel $this
+     */
+    public function setAfterAction($after_callable)
+    {
+        $this->after_callable = $after_callable;
+        return $this;
+    }
 }

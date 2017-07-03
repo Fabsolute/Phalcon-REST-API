@@ -66,7 +66,21 @@ abstract class APIBase extends ServiceBase
         $this->application->before(function () {
             $pattern = $this->router->getMatchedRoute()->getPattern();
             if (strpos($pattern, $this->getPrefix()) === 0) {
-                return $this->before();
+                $before_state = $this->before();
+                if ($before_state === true) {
+                    $name = $this->router->getMatchedRoute()->getName();
+                    foreach ($this->mapped_functions as $mapped_function) {
+                        $uri = $this->getPrefix() . $mapped_function->url;
+                        if ($name === $uri) {
+                            $user_func = $mapped_function->before_callable;
+                            if (is_callable($user_func)) {
+                                return call_user_func($user_func);
+                            }
+                        }
+                    }
+                } else {
+                    return false;
+                }
             }
             return true;
         });
@@ -75,6 +89,17 @@ abstract class APIBase extends ServiceBase
             $pattern = $this->router->getMatchedRoute()->getPattern();
             if (strpos($pattern, $this->getPrefix()) === 0) {
                 $this->after();
+                $name = $this->router->getMatchedRoute()->getName();
+                foreach ($this->mapped_functions as $mapped_function) {
+                    $uri = $this->getPrefix() . $mapped_function->url;
+                    if ($name === $uri) {
+                        $user_func = $mapped_function->after_callable;
+                        if (is_callable($user_func)) {
+                            call_user_func($user_func);
+                        }
+                        break;
+                    }
+                }
             }
         });
     }
@@ -114,6 +139,12 @@ abstract class APIBase extends ServiceBase
         $this->status_code_handler->methodNotAllowed();
     }
 
+    /**
+     * @param string $method
+     * @param string $url
+     * @param string $function_name
+     * @return MapModel
+     */
     protected function map($method, $url, $function_name)
     {
         $map = new MapModel();
@@ -121,7 +152,15 @@ abstract class APIBase extends ServiceBase
         $map->url = $url;
         $map->function_name = $function_name;
 
+        foreach ($this->mapped_functions as $key => $map_model) {
+            if ($map_model->method_name == $method && $map_model->url == $url) {
+                $this->mapped_functions[$key] = $map;
+                return $map;
+            }
+        }
+
         $this->mapped_functions[] = $map;
+        return $map;
     }
 
     public function mount()
@@ -129,11 +168,28 @@ abstract class APIBase extends ServiceBase
         foreach ($this->mapped_functions as $map) {
             if (method_exists($this->collection, strtolower($map->method_name))) {
                 if (in_array($map->method_name, $this->allowed_methods, true)) {
-                    call_user_func_array([$this->collection, strtolower($map->method_name)],
-                        [$map->url, $map->function_name]);
+                    call_user_func_array(
+                        [
+                            $this->collection,
+                            strtolower($map->method_name)
+                        ],
+                        [
+                            $map->url,
+                            $map->function_name,
+                            $this->getPrefix() . $map->url
+                        ]
+                    );
                 } else {
-                    call_user_func_array([$this->collection, strtolower($map->method_name)],
-                        [$map->url, 'methodNotAllowed']);
+                    call_user_func_array(
+                        [
+                            $this->collection,
+                            strtolower($map->method_name)
+                        ],
+                        [
+                            $map->url,
+                            'methodNotAllowed'
+                        ]
+                    );
                 }
             }
         }
@@ -143,8 +199,10 @@ abstract class APIBase extends ServiceBase
 
     protected function before()
     {
-        $this->application->response->setHeader(HttpHeaders::ACCESS_CONTROL_ALLOW_METHODS,
-            strtoupper(implode(', ', $this->allowed_methods)));
+        $this->application->response->setHeader(
+            HttpHeaders::ACCESS_CONTROL_ALLOW_METHODS,
+            strtoupper(implode(', ', $this->allowed_methods))
+        );
         return true;
     }
 
