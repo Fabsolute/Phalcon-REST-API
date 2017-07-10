@@ -136,7 +136,7 @@ class Application extends BaseApplication
             $this->response->setHeader(HttpHeaders::ACCESS_CONTROL_EXPOSE_HEADERS, $exposed_headers);
             if ($method == HttpMethods::GET) {
                 $this->pagination_handler->setHeaders();
-                $e_tag = strtoupper(md5(json_encode($content)));
+                $e_tag = strtoupper(md5(json_encode($content, JSON_PRESERVE_ZERO_FRACTION)));
                 $this->response->setHeader(HttpHeaders::ETAG, $e_tag);
                 $if_none_match = $this->getETag();
 

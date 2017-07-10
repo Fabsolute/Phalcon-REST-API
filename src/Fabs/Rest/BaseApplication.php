@@ -43,7 +43,13 @@ class BaseApplication extends Micro
     public function onAfter()
     {
         $content = $this->getReturnedValue();
-        $this->response->setJsonContent(['status' => 'success', 'data' => $content])->send();
+        $this->response->setJsonContent(
+            [
+                'status' => 'success',
+                'data' => $content
+            ],
+            JSON_PRESERVE_ZERO_FRACTION
+        )->send();
     }
 
     public function onBefore()
