@@ -121,12 +121,57 @@ class Application extends BaseApplication
             }
         }
 
-        return parent::onBefore();
+        $parent_before_response= parent::onBefore();
+        if($parent_before_response){
+            $pattern = $this->router->getMatchedRoute()->getPattern();
+            foreach ($this->autoload_handler->getAPIList() as $api){
+                if (strpos($pattern, $api->getPrefix()) === 0) {
+                    $before_state = $api->before();
+                    if ($before_state === true) {
+                        $name = $this->router->getMatchedRoute()->getName();
+                        foreach ($api->getMappedFunctions() as $mapped_function) {
+                            $uri = $api->getPrefix() . $mapped_function->url;
+                            if ($name === $uri) {
+                                $user_func = $mapped_function->before_callable;
+                                if (is_callable($user_func)) {
+                                    return call_user_func($user_func);
+                                }
+                            }
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        return false;
     }
 
     public function onAfter()
     {
         if (!$this->response->isSent()) {
+
+            $pattern = $this->router->getMatchedRoute()->getPattern();
+            foreach ($this->autoload_handler->getAPIList() as $api) {
+                if (strpos($pattern, $api->getPrefix()) === 0) {
+                    $name = $this->router->getMatchedRoute()->getName();
+                    foreach ($api->getMappedFunctions() as $mapped_function) {
+                        $uri = $api->getPrefix() . $mapped_function->url;
+                        if ($name === $uri) {
+                            $user_func = $mapped_function->after_callable;
+                            if (is_callable($user_func)) {
+                                call_user_func($user_func);
+                            }
+                            break;
+                        }
+                    }
+                    $api->after();
+                    break;
+                }
+            }
+
             $method = $this->request->getMethod();
             $content = $this->getReturnedValue();
             $is_not_modified = false;

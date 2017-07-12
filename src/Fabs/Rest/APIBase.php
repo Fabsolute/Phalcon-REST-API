@@ -62,52 +62,12 @@ abstract class APIBase extends ServiceBase
         $this->collection = new MicroCollection();
         $this->collection->setHandler($this);
         $this->collection->setPrefix($this->getPrefix());
-
-        $this->application->before(function () {
-            $pattern = $this->router->getMatchedRoute()->getPattern();
-            if (strpos($pattern, $this->getPrefix()) === 0) {
-                $before_state = $this->before();
-                if ($before_state === true) {
-                    $name = $this->router->getMatchedRoute()->getName();
-                    foreach ($this->mapped_functions as $mapped_function) {
-                        $uri = $this->getPrefix() . $mapped_function->url;
-                        if ($name === $uri) {
-                            $user_func = $mapped_function->before_callable;
-                            if (is_callable($user_func)) {
-                                return call_user_func($user_func);
-                            }
-                        }
-                    }
-                } else {
-                    return false;
-                }
-            }
-            return true;
-        });
-
-        $this->application->after(function () {
-            $pattern = $this->router->getMatchedRoute()->getPattern();
-            if (strpos($pattern, $this->getPrefix()) === 0) {
-                $this->after();
-                $name = $this->router->getMatchedRoute()->getName();
-                foreach ($this->mapped_functions as $mapped_function) {
-                    $uri = $this->getPrefix() . $mapped_function->url;
-                    if ($name === $uri) {
-                        $user_func = $mapped_function->after_callable;
-                        if (is_callable($user_func)) {
-                            call_user_func($user_func);
-                        }
-                        break;
-                    }
-                }
-            }
-        });
     }
 
     /**
      * @return string
      */
-    protected abstract function getPrefix();
+    public abstract function getPrefix();
 
     public function get()
     {
@@ -197,7 +157,15 @@ abstract class APIBase extends ServiceBase
         $this->application->mount($this->collection);
     }
 
-    protected function before()
+    /**
+     * @return Models\MapModel[]
+     */
+    public function getMappedFunctions()
+    {
+        return $this->mapped_functions;
+    }
+
+    public function before()
     {
         $this->application->response->setHeader(
             HttpHeaders::ACCESS_CONTROL_ALLOW_METHODS,
@@ -206,7 +174,7 @@ abstract class APIBase extends ServiceBase
         return true;
     }
 
-    protected function after()
+    public function after()
     {
 
     }

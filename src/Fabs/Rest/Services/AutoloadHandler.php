@@ -36,7 +36,7 @@ class AutoloadHandler extends ServiceBase
     /**
      * @return APIBase[]
      */
-    private function getAPIList()
+    public function getAPIList()
     {
         $this->loadFolders();
 
