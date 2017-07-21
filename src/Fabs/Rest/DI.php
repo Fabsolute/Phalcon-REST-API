@@ -12,6 +12,7 @@ namespace Fabs\Rest;
 use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
+use Fabs\Rest\Services\RuleHandler;
 use Fabs\Rest\Services\TooManyRequestHandler;
 use Phalcon\Cache\BackendInterface;
 use Phalcon\Mvc\Router;
@@ -60,6 +61,10 @@ class DI extends FactoryDefault
 
         $this->set('too_many_request_handler', function () {
             return new TooManyRequestHandler();
+        });
+
+        $this->set('rule_handler', function () {
+            return new RuleHandler();
         });
     }
 

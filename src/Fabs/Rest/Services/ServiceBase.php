@@ -23,6 +23,7 @@ use Phalcon\Di\Injectable;
  * @property TooManyRequestHandler too_many_request_handler
  * @property BackendInterface cache
  * @property PaginationHandler pagination_handler
+ * @property RuleHandler rule_handler
  */
 abstract class ServiceBase extends Injectable
 {
