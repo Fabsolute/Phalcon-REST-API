@@ -13,6 +13,7 @@ use ErrorException;
 use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
+use Fabs\Rest\Services\RuleHandler;
 use Fabs\Rest\Services\TooManyRequestHandler;
 use Phalcon\Cache\BackendInterface;
 use Phalcon\Mvc\Micro;
@@ -27,6 +28,7 @@ use Phalcon\Mvc\Micro;
  * @property TooManyRequestHandler too_many_request_handler
  * @property BackendInterface cache
  * @property PaginationHandler pagination_handler
+ * @property RuleHandler rule_handler
  */
 class BaseApplication extends Micro
 {

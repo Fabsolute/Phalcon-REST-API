@@ -126,28 +126,35 @@ class Application extends BaseApplication
             $pattern = $this->router->getMatchedRoute()->getPattern();
             foreach ($this->autoload_handler->getAPIList() as $api) {
                 if (strpos($pattern, $api->getPrefix()) === 0) {
+
                     $before_state = $api->before();
-                    if ($before_state === true) {
-                        $name = $this->router->getMatchedRoute()->getName();
-                        foreach ($api->getMappedFunctions() as $mapped_function) {
-                            if ($mapped_function->method_name === $this->request->getMethod()) {
-                                $uri = $api->getPrefix() . $mapped_function->url;
-                                if ($name === $uri) {
-                                    $user_func = $mapped_function->before_callable;
-                                    if (is_callable($user_func)) {
-                                        return call_user_func($user_func);
+                    if ($before_state !== true) {
+                        return false;
+                    }
+
+                    $name = $this->router->getMatchedRoute()->getName();
+                    foreach ($api->getMappedFunctions() as $mapped_function) {
+                        if ($mapped_function->method_name === $this->request->getMethod()) {
+                            $uri = $api->getPrefix() . $mapped_function->url;
+                            if ($name === $uri) {
+                                $user_func = $mapped_function->before_callable;
+                                if (is_callable($user_func)) {
+                                    $response = call_user_func($user_func);
+                                    if ($response !== true) {
+                                        return false;
                                     }
                                 }
                             }
                         }
-                    } else {
-                        return false;
                     }
+
+                    break;
                 }
             }
 
-            return true;
+            return $this->rule_handler->execute();
         }
+
         return false;
     }
 
