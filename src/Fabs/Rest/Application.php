@@ -22,6 +22,18 @@ class Application extends BaseApplication
      */
     protected $expose_headers = [];
 
+    /**
+     * @var bool
+     */
+    protected $require_json = true;
+    /**
+     * @var bool
+     */
+    protected $require_body = true;
+
+    /**
+     * @var TooManyRequestHandler
+     */
     public $ip_too_many_request_handler = null;
 
     public function __construct($di = null)
@@ -86,6 +98,14 @@ class Application extends BaseApplication
 
     public function onBefore()
     {
+        $pattern = $this->router->getMatchedRoute()->getPattern();
+        foreach ($this->autoload_handler->getAPIList() as $api) {
+            if (strpos($pattern, $api->getPrefix()) === 0) {
+                $api->awake();
+                break;
+            }
+        }
+
         $method = $this->request->getMethod();
 
         $this->ip_too_many_request_handler->increaseRequestCount();
@@ -100,7 +120,7 @@ class Application extends BaseApplication
             || $method == HttpMethods::PUT
             || $method == HttpMethods::PATCH;
 
-        if ($is_data_required) {
+        if ($is_data_required && $this->require_json === true) {
             $content_type = $this->request->getHeader(HttpHeaders::CONTENT_TYPE);
             if ($content_type != 'application/json') {
                 $this->status_code_handler->unsupportedMediaType([
@@ -109,14 +129,16 @@ class Application extends BaseApplication
                 return false;
             }
 
-            $data = $this->getRequestData();
-            if (count($data) == 0) {
-                if (json_last_error() != JSON_ERROR_NONE) {
-                    $this->status_code_handler->badRequest();
-                    return false;
-                } else {
-                    $this->status_code_handler->unprocessableEntity();
-                    return false;
+            if ($this->require_body === true) {
+                $data = $this->getRequestData();
+                if (count($data) == 0) {
+                    if (json_last_error() != JSON_ERROR_NONE) {
+                        $this->status_code_handler->badRequest();
+                        return false;
+                    } else {
+                        $this->status_code_handler->unprocessableEntity();
+                        return false;
+                    }
                 }
             }
         }
@@ -243,5 +265,41 @@ class Application extends BaseApplication
     public function getETag()
     {
         return $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
+    }
+
+    /**
+     * @return bool
+     */
+    public function getRequireJSON()
+    {
+        return $this->require_json;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getRequireBody()
+    {
+        return $this->require_body;
+    }
+
+    /**
+     * @param $require_json bool
+     * @return Application
+     */
+    public function setRequireJSON($require_json)
+    {
+        $this->require_json = $require_json;
+        return $this;
+    }
+
+    /**
+     * @param $require_body bool
+     * @return Application
+     */
+    public function setRequireBody($require_body)
+    {
+        $this->require_body = $require_body;
+        return $this;
     }
 }
