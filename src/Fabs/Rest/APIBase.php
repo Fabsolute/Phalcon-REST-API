@@ -165,6 +165,11 @@ abstract class APIBase extends ServiceBase
         return $this->mapped_functions;
     }
 
+    public function awake()
+    {
+
+    }
+
     public function before()
     {
         $this->application->response->setHeader(
