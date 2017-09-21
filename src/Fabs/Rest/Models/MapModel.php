@@ -8,7 +8,6 @@
 
 namespace Fabs\Rest\Models;
 
-
 use Fabs\Serialize\SerializableObject;
 
 class MapModel extends SerializableObject
@@ -20,6 +19,8 @@ class MapModel extends SerializableObject
     public $before_callable = null;
     /** @var callable */
     public $after_callable = null;
+    /** @var string[] */
+    public $rule_list = [];
 
     /**
      * @param callable $before_callable
@@ -38,6 +39,17 @@ class MapModel extends SerializableObject
     public function setAfterAction($after_callable)
     {
         $this->after_callable = $after_callable;
+        return $this;
+    }
+
+    /**
+     * @param string $rule
+     * @return MapModel
+     * @author ahmetturk <ahmetturk93@gmail.com>
+     */
+    public function addRule($rule)
+    {
+        $this->rule_list[] = $rule;
         return $this;
     }
 }

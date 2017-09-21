@@ -159,6 +159,11 @@ class Application extends BaseApplication
                         if ($mapped_function->method_name === $this->request->getMethod()) {
                             $uri = $api->getPrefix() . $mapped_function->url;
                             if ($name === $uri) {
+
+                                foreach ($mapped_function->rule_list as $rule_name) {
+                                    $this->rule_handler->addRule($rule_name);
+                                }
+
                                 $user_func = $mapped_function->before_callable;
                                 if (is_callable($user_func)) {
                                     $response = call_user_func($user_func);
