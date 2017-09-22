@@ -95,8 +95,17 @@ class Application extends BaseApplication
         return $this->expose_headers;
     }
 
-
     public function onBefore()
+    {
+        $on_before_operations_result = $this->onBeforeOperations();
+        if ($on_before_operations_result === false) {
+            $this->stop();
+        }
+
+        return $on_before_operations_result;
+    }
+
+    public function onBeforeOperations()
     {
         $pattern = $this->router->getMatchedRoute()->getPattern();
         foreach ($this->autoload_handler->getAPIList() as $api) {
