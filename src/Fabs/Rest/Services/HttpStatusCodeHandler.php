@@ -10,7 +10,7 @@ namespace Fabs\Rest\Services;
 
 use Fabs\Rest\Constants\HttpStatusCodes;
 use Fabs\Rest\Constants\ResponseStatus;
-use Fabs\Rest\Models\ErrorModel;
+use Fabs\Rest\Models\ErrorResponseModel;
 use Fabs\Serialize\SerializableObject;
 
 class HttpStatusCodeHandler extends ServiceBase
@@ -18,19 +18,27 @@ class HttpStatusCodeHandler extends ServiceBase
     /**
      * @param $error_code int
      * @param $error_message string
-     * @param $error_details null|SerializableObject
+     * @param $error_details array|SerializableObject|null
      */
     public function handleError($error_code, $error_message, $error_details = null)
     {
-        $error_model = new ErrorModel();
-        $error_model->status = ResponseStatus::FAILURE;
-        $error_model->error_message = $error_message;
-        $error_model->error_details = $error_details;
+        $error_response_model = new ErrorResponseModel();
+        $error_response_model->status = ResponseStatus::FAILURE;
+
+        if ($error_details !== null) {
+            if ($error_details instanceof SerializableObject) {
+                $error_response_model->error_message = $error_message;
+                $error_response_model->error_details = $error_details;
+            } elseif (is_array($error_details) && count($error_details) > 0) {
+                $error_response_model->error_list = $error_details;
+                $error_response_model->error = $error_message;
+            }
+        }
 
         if (!$this->response->isSent()) {
             $this->response
                 ->setStatusCode($error_code)
-                ->setJsonContent($error_model)->send();
+                ->setJsonContent($error_response_model)->send();
         }
     }
 
@@ -81,12 +89,12 @@ class HttpStatusCodeHandler extends ServiceBase
     {
         $this->handleError(409, HttpStatusCodes::Conflict, $error_details);
     }
-    
+
     public function internalServerError($error_details = null)
     {
         $this->handleError(500, HttpStatusCodes::InternalServerError, $error_details);
     }
-    
+
     public function notModified()
     {
         $this->response->setNotModified()->send();
@@ -96,12 +104,12 @@ class HttpStatusCodeHandler extends ServiceBase
     {
         $this->response->setStatusCode(200)->send();
     }
-    
+
     public function created()
     {
         $this->response->setStatusCode(201)->send();
     }
-    
+
     public function accepted()
     {
         $this->response->setStatusCode(202)->send();
