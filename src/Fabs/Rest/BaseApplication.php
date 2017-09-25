@@ -10,6 +10,7 @@ namespace Fabs\Rest;
 
 
 use ErrorException;
+use Fabs\Rest\Constants\ResponseStatus;
 use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
@@ -47,7 +48,7 @@ class BaseApplication extends Micro
         $content = $this->getReturnedValue();
         $this->response->setJsonContent(
             [
-                'status' => 'success',
+                'status' => ResponseStatus::SUCCESS,
                 'data' => $content
             ],
             JSON_PRESERVE_ZERO_FRACTION
