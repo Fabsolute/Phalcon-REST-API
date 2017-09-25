@@ -10,10 +10,6 @@ class ErrorResponseModel extends ResponseModel
 {
 
     /** @deprecated
-     *  @var string
-     */
-    public $error = null;
-    /** @deprecated
      *  @var array|null
      */
     public $error_list = null;
@@ -28,7 +24,6 @@ class ErrorResponseModel extends ResponseModel
     {
         parent::__construct();
 
-        $this->addRenderIfNotNullCondition('error');
         $this->addRenderIfNotNullCondition('error_list');
         $this->addRenderIfNotNullCondition('error_message');
         $this->addRenderIfNotNullCondition('error_details');
