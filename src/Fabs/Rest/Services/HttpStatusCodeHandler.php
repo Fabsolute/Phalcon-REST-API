@@ -25,13 +25,12 @@ class HttpStatusCodeHandler extends ServiceBase
         $error_response_model = new ErrorResponseModel();
         $error_response_model->status = ResponseStatus::FAILURE;
 
+        $error_response_model->error_message = $error_message;
         if ($error_details !== null) {
             if ($error_details instanceof SerializableObject) {
-                $error_response_model->error_message = $error_message;
                 $error_response_model->error_details = $error_details;
             } elseif (is_array($error_details) && count($error_details) > 0) {
                 $error_response_model->error_list = $error_details;
-                $error_response_model->error = $error_message;
             }
         }
 
