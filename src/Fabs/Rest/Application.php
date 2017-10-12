@@ -165,20 +165,12 @@ class Application extends BaseApplication
 
                     $name = $this->router->getMatchedRoute()->getName();
                     foreach ($api->getMappedFunctions() as $mapped_function) {
-                        if ($mapped_function->method_name === $this->request->getMethod()) {
-                            $uri = $api->getPrefix() . $mapped_function->url;
+                        if ($mapped_function->getMethodName() === $this->request->getMethod()) {
+                            $uri = $api->getPrefix() . $mapped_function->getURI();
                             if ($name === $uri) {
-
-                                foreach ($mapped_function->rule_list as $rule_name) {
-                                    $this->rule_handler->addRule($rule_name);
-                                }
-
-                                $user_func = $mapped_function->before_callable;
-                                if (is_callable($user_func)) {
-                                    $response = call_user_func($user_func);
-                                    if ($response !== true) {
-                                        return false;
-                                    }
+                                $response = $mapped_function->executeBefore();
+                                if ($response !== true) {
+                                    return false;
                                 }
                             }
                         }
@@ -203,13 +195,10 @@ class Application extends BaseApplication
                 if (strpos($pattern, $api->getPrefix()) === 0) {
                     $name = $this->router->getMatchedRoute()->getName();
                     foreach ($api->getMappedFunctions() as $mapped_function) {
-                        if ($mapped_function->method_name === $this->request->getMethod()) {
-                            $uri = $api->getPrefix() . $mapped_function->url;
+                        if ($mapped_function->getMethodName() === $this->request->getMethod()) {
+                            $uri = $api->getPrefix() . $mapped_function->getURI();
                             if ($name === $uri) {
-                                $user_func = $mapped_function->after_callable;
-                                if (is_callable($user_func)) {
-                                    call_user_func($user_func);
-                                }
+                                $mapped_function->executeAfter();
                                 break;
                             }
                         }

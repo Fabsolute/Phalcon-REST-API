@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ahmetturk
- * Date: 05/06/2017
- * Time: 10:09
- */
 
 namespace Fabs\Rest\Services;
 

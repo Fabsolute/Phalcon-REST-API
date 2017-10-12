@@ -13,6 +13,7 @@ use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
 use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\MapModel;
+use Fabs\Rest\Models\QueryElement;
 use Fabs\Rest\Services\PatchHandler;
 use Fabs\Rest\Services\ServiceBase;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
@@ -101,19 +102,16 @@ abstract class APIBase extends ServiceBase
 
     /**
      * @param string $method
-     * @param string $url
+     * @param string $uri
      * @param string $function_name
      * @return MapModel
      */
-    protected function map($method, $url, $function_name)
+    protected function map($method, $uri, $function_name)
     {
-        $map = new MapModel();
-        $map->method_name = $method;
-        $map->url = $url;
-        $map->function_name = $function_name;
+        $map = new MapModel($method, $uri, $function_name);
 
         foreach ($this->mapped_functions as $key => $map_model) {
-            if ($map_model->method_name == $method && $map_model->url == $url) {
+            if ($map_model->getMethodName() == $method && $map_model->getURI() == $uri) {
                 $this->mapped_functions[$key] = $map;
                 return $map;
             }
@@ -126,27 +124,27 @@ abstract class APIBase extends ServiceBase
     public function mount()
     {
         foreach ($this->mapped_functions as $map) {
-            if (method_exists($this->collection, strtolower($map->method_name))) {
-                if (in_array($map->method_name, $this->allowed_methods, true)) {
+            if (method_exists($this->collection, $map->getMethodName())) {
+                if (in_array($map->getMethodName(), $this->allowed_methods, true)) {
                     call_user_func_array(
                         [
                             $this->collection,
-                            strtolower($map->method_name)
+                            $map->getMethodName()
                         ],
                         [
-                            $map->url,
-                            $map->function_name,
-                            $this->getPrefix() . $map->url
+                            $map->getURI(),
+                            $map->getFunctionName(),
+                            $this->getPrefix() . $map->getURI()
                         ]
                     );
                 } else {
                     call_user_func_array(
                         [
                             $this->collection,
-                            strtolower($map->method_name)
+                            $map->getMethodName()
                         ],
                         [
-                            $map->url,
+                            $map->getURI(),
                             'methodNotAllowed'
                         ]
                     );
@@ -207,5 +205,14 @@ abstract class APIBase extends ServiceBase
     public function methodNotAllowed()
     {
         $this->status_code_handler->methodNotAllowed();
+    }
+
+    /**
+     * @return QueryElement[]|null
+     */
+    public function getSearchQueries()
+    {
+        $search_query = $this->dispatcher->getParam('search_queries');
+        return $search_query;
     }
 }
