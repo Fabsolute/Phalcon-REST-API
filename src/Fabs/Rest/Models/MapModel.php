@@ -140,15 +140,26 @@ class MapModel extends ServiceBase
         }
 
         $query_element_list = [];
+        $sort_by = $this->request->getQuery('sortBy');
+        $sort_query_element = null;
         foreach ($this->getQueryElementList() as $query_element) {
             $query_data = $this->request->getQuery($query_element->getQueryName());
             if ($query_data !== null) {
                 $query_element_list[] = $query_element->setValue($query_data);
             }
+
+            if ($sort_by !== null) {
+                if ($query_element->getIsSortable()) {
+                    if ($query_element->getQueryName() === $sort_by) {
+                        $sort_query_element = $query_element;
+                    }
+                }
+            }
         }
 
         if (count($query_element_list) > 0) {
-            $this->dispatcher->setParam('search_queries', $query_element_list);
+            $search_queries = new SearchQueries($query_element_list, $sort_query_element);
+            $this->dispatcher->setParam('search_queries', $search_queries);
         }
 
         return true;
