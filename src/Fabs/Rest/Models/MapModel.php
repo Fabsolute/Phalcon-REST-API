@@ -140,7 +140,8 @@ class MapModel extends ServiceBase
         }
 
         $query_element_list = [];
-        $sort_by = $this->request->getQuery('sortBy');
+        $sort_by = $this->request->getQuery('sort_by');
+        $sort_by_descending = $this->request->getQuery('sort_by_descending');
         $sort_query_element = null;
         foreach ($this->getQueryElementList() as $query_element) {
             $query_data = $this->request->getQuery($query_element->getQueryName());
@@ -148,18 +149,22 @@ class MapModel extends ServiceBase
                 $query_element_list[] = $query_element->setValue($query_data);
             }
 
-            if ($sort_by !== null) {
-                if ($query_element->getIsSortable()) {
-                    if ($query_element->getQueryName() === $sort_by) {
+            if ($sort_by !== null || $sort_by_descending !== null) {
+                if ($query_element instanceof SortQueryElement) {
+                    $sort_name = $sort_by ?? $sort_by_descending;
+                    if ($query_element->getQueryName() === $sort_name) {
                         $sort_query_element = $query_element;
+                        if ($sort_by === null) {
+                            $sort_query_element->setIsDescending(true);
+                        }
                     }
                 }
             }
         }
 
         if (count($query_element_list) > 0) {
-            $search_queries = new SearchQueries($query_element_list, $sort_query_element);
-            $this->dispatcher->setParam('search_queries', $search_queries);
+            $search_queries = new SearchQueryModel($query_element_list, $sort_query_element);
+            $this->dispatcher->setParam('search_query', $search_queries);
         }
 
         return true;

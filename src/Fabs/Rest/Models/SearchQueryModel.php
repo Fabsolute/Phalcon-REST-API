@@ -2,11 +2,11 @@
 
 namespace Fabs\Rest\Models;
 
-class SearchQueries
+class SearchQueryModel
 {
     /** @var QueryElement[] */
     private $query_element_list = [];
-    /** @var QueryElement */
+    /** @var SortQueryElement */
     private $sort_query_element = null;
 
     public function __construct($query_element_list, $sort_query_element)
@@ -16,7 +16,7 @@ class SearchQueries
     }
 
     /**
-     * @return QueryElement
+     * @return SortQueryElement|null
      */
     public function getSortQueryElement()
     {

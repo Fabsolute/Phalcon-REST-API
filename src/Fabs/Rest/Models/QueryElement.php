@@ -12,12 +12,10 @@ class QueryElement
     private $is_exact = false;
     /** @var bool */
     private $is_required = false;
-    /** @var bool */
-    private $is_sortable = false;
     /** @var mixed */
     private $value = null;
 
-    private function __construct($query_name)
+    protected function __construct($query_name)
     {
         $this->query_name = $query_name;
     }
@@ -49,16 +47,6 @@ class QueryElement
     public function setIsRequired($is_required = true)
     {
         $this->is_required = $is_required;
-        return $this;
-    }
-
-    /**
-     * @param bool $is_sortable
-     * @return QueryElement
-     */
-    public function setIsSortable($is_sortable = true)
-    {
-        $this->is_sortable = $is_sortable;
         return $this;
     }
 
@@ -109,14 +97,6 @@ class QueryElement
     }
 
     /**
-     * @return bool
-     */
-    public function getIsSortable()
-    {
-        return $this->is_sortable;
-    }
-
-    /**
      * @return mixed
      */
     public function getValue()
@@ -131,6 +111,16 @@ class QueryElement
     public static function create($query_name)
     {
         $query_element = new static($query_name);
+        return $query_element;
+    }
+
+    /**
+     * @param string $query_name
+     * @return SortQueryElement
+     */
+    public static function createSortable($query_name)
+    {
+        $query_element = new SortQueryElement($query_name);
         return $query_element;
     }
 }

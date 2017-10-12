@@ -14,7 +14,7 @@ use Fabs\Rest\Constants\HttpMethods;
 use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\MapModel;
 use Fabs\Rest\Models\QueryElement;
-use Fabs\Rest\Models\SearchQueries;
+use Fabs\Rest\Models\SearchQueryModel;
 use Fabs\Rest\Services\PatchHandler;
 use Fabs\Rest\Services\ServiceBase;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
@@ -209,11 +209,11 @@ abstract class APIBase extends ServiceBase
     }
 
     /**
-     * @return SearchQueries[]|null
+     * @return SearchQueryModel|null
      */
-    public function getSearchQueries()
+    public function getSearchQuery()
     {
-        $search_query = $this->dispatcher->getParam('search_queries');
+        $search_query = $this->dispatcher->getParam('search_query');
         return $search_query;
     }
 }
