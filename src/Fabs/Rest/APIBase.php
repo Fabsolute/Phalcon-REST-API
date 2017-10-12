@@ -126,7 +126,7 @@ abstract class APIBase extends ServiceBase
     {
         foreach ($this->mapped_functions as $map) {
             if (method_exists($this->collection, $map->getMethodName())) {
-                if (in_array($map->getMethodName(), $this->allowed_methods, true)) {
+                if (in_array(strtoupper($map->getMethodName()), $this->allowed_methods, true)) {
                     call_user_func_array(
                         [
                             $this->collection,
