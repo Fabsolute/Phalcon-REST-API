@@ -14,6 +14,8 @@ class QueryElement
     private $is_required = false;
     /** @var mixed */
     private $value = null;
+    /** @var string[] */
+    private $allowed_special_characters = [];
 
     protected function __construct($query_name)
     {
@@ -115,12 +117,20 @@ class QueryElement
     }
 
     /**
-     * @param string $query_name
-     * @return SortQueryElement
+     * @return string[]
      */
-    public static function createSortable($query_name)
+    public function getAllowedSpecialCharacters()
     {
-        $query_element = new SortQueryElement($query_name);
-        return $query_element;
+        return $this->allowed_special_characters;
+    }
+
+    /**
+     * @param string[] $allowed_special_characters
+     * @return QueryElement
+     */
+    public function setAllowedSpecialCharacters($allowed_special_characters)
+    {
+        $this->allowed_special_characters = $allowed_special_characters;
+        return $this;
     }
 }

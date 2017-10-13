@@ -21,6 +21,8 @@ class MapModel extends ServiceBase
     private $rule_list = [];
     /** @var QueryElement[] */
     private $query_list = [];
+    /** @var SortQueryElement */
+    private $default_sort_query_element = null;
 
     public function __construct($method_name, $uri, $function_name)
     {
@@ -125,6 +127,24 @@ class MapModel extends ServiceBase
         return $this->query_list;
     }
 
+    /**
+     * @return SortQueryElement
+     */
+    public function getDefaultSortQueryElement()
+    {
+        return $this->default_sort_query_element;
+    }
+
+    /**
+     * @param SortQueryElement $default_sort_query_element
+     * @return MapModel
+     */
+    public function setDefaultSortQueryElement($default_sort_query_element)
+    {
+        $this->default_sort_query_element = $default_sort_query_element;
+        return $this;
+    }
+
     public function executeBefore()
     {
         foreach ($this->getRuleList() as $rule_name) {
@@ -155,7 +175,7 @@ class MapModel extends ServiceBase
                     if ($query_element->getQueryName() === $sort_name) {
                         $sort_query_element = $query_element;
                         if ($sort_by === null) {
-                            $sort_query_element->setIsDescending(true);
+                            $sort_query_element->setDescending(true);
                         }
                     }
                 }
@@ -163,6 +183,10 @@ class MapModel extends ServiceBase
         }
 
         if (count($query_element_list) > 0) {
+            if ($sort_query_element === null) {
+                $sort_query_element = $this->default_sort_query_element;
+            }
+
             $search_queries = new SearchQueryModel($query_element_list, $sort_query_element);
             $this->dispatcher->setParam('search_query', $search_queries);
         }
