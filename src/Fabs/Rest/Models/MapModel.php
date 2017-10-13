@@ -26,7 +26,7 @@ class MapModel extends ServiceBase
 
     public function __construct($method_name, $uri, $function_name)
     {
-        $this->method_name = strtolower($method_name);
+        $this->method_name = strtoupper($method_name);
         $this->uri = $uri;
         $this->function_name = $function_name;
     }
