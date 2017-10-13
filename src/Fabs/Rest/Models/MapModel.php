@@ -166,6 +166,9 @@ class MapModel extends ServiceBase
         foreach ($this->getQueryElementList() as $query_element) {
             $query_data = $this->request->getQuery($query_element->getQueryName());
             if ($query_data !== null) {
+                if (is_callable($query_element->getFilter())) {
+                    $query_data = call_user_func($query_element->getFilter(), $query_data);
+                }
                 $query_element_list[] = $query_element->setValue($query_data);
             }
 

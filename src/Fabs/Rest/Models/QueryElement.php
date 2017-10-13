@@ -16,6 +16,8 @@ class QueryElement
     private $value = null;
     /** @var string[] */
     private $allowed_special_characters = [];
+    /** @var callable */
+    private $filter = null;
 
     protected function __construct($query_name)
     {
@@ -131,6 +133,24 @@ class QueryElement
     public function setAllowedSpecialCharacters($allowed_special_characters)
     {
         $this->allowed_special_characters = $allowed_special_characters;
+        return $this;
+    }
+
+    /**
+     * @return callable
+     */
+    public function getFilter()
+    {
+        return $this->filter;
+    }
+
+    /**
+     * @param callable $filter
+     * @return QueryElement
+     */
+    public function setFilter($filter)
+    {
+        $this->filter = $filter;
         return $this;
     }
 }
