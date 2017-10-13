@@ -165,7 +165,7 @@ class Application extends BaseApplication
 
                     $name = $this->router->getMatchedRoute()->getName();
                     foreach ($api->getMappedFunctions() as $mapped_function) {
-                        if ($mapped_function->getMethodName() === $this->request->getMethod()) {
+                        if ($mapped_function->getMethodName() === strtolower($this->request->getMethod())) {
                             $uri = $api->getPrefix() . $mapped_function->getURI();
                             if ($name === $uri) {
                                 $response = $mapped_function->executeBefore();
@@ -195,7 +195,7 @@ class Application extends BaseApplication
                 if (strpos($pattern, $api->getPrefix()) === 0) {
                     $name = $this->router->getMatchedRoute()->getName();
                     foreach ($api->getMappedFunctions() as $mapped_function) {
-                        if ($mapped_function->getMethodName() === $this->request->getMethod()) {
+                        if ($mapped_function->getMethodName() === strtolower($this->request->getMethod())) {
                             $uri = $api->getPrefix() . $mapped_function->getURI();
                             if ($name === $uri) {
                                 $mapped_function->executeAfter();
