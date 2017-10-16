@@ -164,12 +164,28 @@ class MapModel extends ServiceBase
         $sort_by_descending = $this->request->getQuery('sort_by_descending');
         $sort_query_element = null;
         foreach ($this->getQueryElementList() as $query_element) {
-            $query_data = $this->request->getQuery($query_element->getQueryName());
-            if ($query_data !== null) {
+            $query_value = $this->request->getQuery($query_element->getQueryName());
+            if ($query_value !== null) {
                 if (is_callable($query_element->getFilter())) {
-                    $query_data = call_user_func($query_element->getFilter(), $query_data);
+                    $query_value = call_user_func($query_element->getFilter(), $query_value);
                 }
-                $query_element_list[] = $query_element->setValue($query_data);
+
+                $validated = true;
+                $validation_list = $query_element->getValidationList();
+                foreach ($validation_list as $validation) {
+                    $validated = $validation->isValid($query_value);
+                    if ($validated === false) {
+                        $continue_application = $query_element->fireValidationFailed($validation);
+                        if ($continue_application === false) {
+                            return false;
+                        }
+                        break;
+                    }
+                }
+
+                if ($validated) {
+                    $query_element_list[] = $query_element->setValue($query_value);
+                }
             }
 
             if ($sort_by !== null || $sort_by_descending !== null) {

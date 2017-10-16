@@ -2,6 +2,8 @@
 
 namespace Fabs\Rest\Models;
 
+use Fabs\Serialize\Validation\ValidationBase;
+
 class QueryElement
 {
     /** @var string */
@@ -18,6 +20,10 @@ class QueryElement
     private $allowed_special_characters = [];
     /** @var callable */
     private $filter = null;
+    /** @var ValidationBase[] */
+    private $validation_list = [];
+    /** @var callable|null */
+    private $validation_failed_callback = null;
 
     protected function __construct($query_name)
     {
@@ -51,6 +57,26 @@ class QueryElement
     public function setIsRequired($is_required = true)
     {
         $this->is_required = $is_required;
+        return $this;
+    }
+
+    /**
+     * @param ValidationBase $validation
+     * @return QueryElement
+     */
+    public function addValidation($validation)
+    {
+        $this->validation_list[] = $validation;
+        return $this;
+    }
+
+    /**
+     * @param callable $validation_failed_callback
+     * @return QueryElement
+     */
+    public function setValidationFailedCallback($validation_failed_callback)
+    {
+        $this->validation_failed_callback = $validation_failed_callback;
         return $this;
     }
 
@@ -106,6 +132,27 @@ class QueryElement
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * @return ValidationBase[]
+     */
+    public function getValidationList()
+    {
+        return $this->validation_list;
+    }
+
+    /**
+     * @param ValidationBase $validation
+     * @return boolean
+     */
+    public function fireValidationFailed($validation)
+    {
+        if (is_callable($this->validation_failed_callback)) {
+            return call_user_func($this->validation_failed_callback, [$this, $validation]);
+        }
+
+        return true;
     }
 
     /**
