@@ -12,6 +12,8 @@ namespace Fabs\Rest\Constants;
 class HttpStatusCodes
 {
     const Success = 'success';
+    const Created = 'created';
+    const Accepted = 'accepted';
     const Forbidden = 'forbidden';
     const Unauthorized = 'unauthorized';
     const NotFound = 'not_found';
@@ -20,5 +22,6 @@ class HttpStatusCodes
     const UnprocessableEntity = 'unprocessable_entity';
     const UnsupportedMediaType = 'unsupported_media_type';
     const MethodNotAllowed = 'method_not_allowed';
+    const InternalServerError = 'internal_server_error';
     const Conflict = 'conflict';
 }

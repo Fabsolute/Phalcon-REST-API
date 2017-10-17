@@ -11,7 +11,11 @@ namespace Fabs\Rest;
 
 use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
+use Fabs\Rest\Constants\PatchOperations;
 use Fabs\Rest\Models\MapModel;
+use Fabs\Rest\Models\QueryElement;
+use Fabs\Rest\Models\SearchQueryModel;
+use Fabs\Rest\Services\PatchHandler;
 use Fabs\Rest\Services\ServiceBase;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
@@ -30,15 +34,24 @@ abstract class APIBase extends ServiceBase
      */
     protected $mapped_functions = [];
 
+    /**
+     * @var PatchHandler
+     */
+    protected $patch_handler = null;
+
     public function __construct()
     {
+        $this->patch_handler = new PatchHandler();
+        $this->patch_handler->addAllowedOperation(PatchOperations::ADD);
+        $this->patch_handler->addAllowedOperation(PatchOperations::REMOVE);
+        $this->patch_handler->addAllowedOperation(PatchOperations::REPLACE);
+
         $this->addAllowedMethod(HttpMethods::GET);
         $this->addAllowedMethod(HttpMethods::POST);
         $this->addAllowedMethod(HttpMethods::HEAD);
         $this->addAllowedMethod(HttpMethods::PUT);
         $this->addAllowedMethod(HttpMethods::PATCH);
         $this->addAllowedMethod(HttpMethods::DELETE);
-
 
         $this->map(HttpMethods::GET, '/', 'get');
         $this->map(HttpMethods::POST, '/', 'post');
@@ -51,27 +64,12 @@ abstract class APIBase extends ServiceBase
         $this->collection = new MicroCollection();
         $this->collection->setHandler($this);
         $this->collection->setPrefix($this->getPrefix());
-
-        $this->application->before(function () {
-            $pattern = $this->router->getMatchedRoute()->getPattern();
-            if (strpos($pattern, $this->getPrefix()) === 0) {
-                return $this->before();
-            }
-            return true;
-        });
-
-        $this->application->after(function () {
-            $pattern = $this->router->getMatchedRoute()->getPattern();
-            if (strpos($pattern, $this->getPrefix()) === 0) {
-                $this->after();
-            }
-        });
     }
 
     /**
      * @return string
      */
-    protected abstract function getPrefix();
+    public abstract function getPrefix();
 
     public function get()
     {
@@ -103,26 +101,54 @@ abstract class APIBase extends ServiceBase
         $this->status_code_handler->methodNotAllowed();
     }
 
-    protected function map($method, $url, $function_name)
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param string $function_name
+     * @return MapModel
+     */
+    protected function map($method, $uri, $function_name)
     {
-        $map = new MapModel();
-        $map->method_name = $method;
-        $map->url = $url;
-        $map->function_name = $function_name;
+        $map = new MapModel($method, $uri, $function_name);
+
+        foreach ($this->mapped_functions as $key => $map_model) {
+            if ($map_model->getMethodName() == $method && $map_model->getURI() == $uri) {
+                $this->mapped_functions[$key] = $map;
+                return $map;
+            }
+        }
 
         $this->mapped_functions[] = $map;
+        return $map;
     }
 
     public function mount()
     {
         foreach ($this->mapped_functions as $map) {
-            if (method_exists($this->collection, strtolower($map->method_name))) {
-                if (in_array($map->method_name, $this->allowed_methods, true)) {
-                    call_user_func_array([$this->collection, strtolower($map->method_name)],
-                        [$map->url, $map->function_name]);
+            if (method_exists($this->collection, $map->getMethodName())) {
+                if (in_array(strtoupper($map->getMethodName()), $this->allowed_methods, true)) {
+                    call_user_func_array(
+                        [
+                            $this->collection,
+                            $map->getMethodName()
+                        ],
+                        [
+                            $map->getURI(),
+                            $map->getFunctionName(),
+                            $this->getPrefix() . $map->getURI()
+                        ]
+                    );
                 } else {
-                    call_user_func_array([$this->collection, strtolower($map->method_name)],
-                        [$map->url, 'methodNotAllowed']);
+                    call_user_func_array(
+                        [
+                            $this->collection,
+                            $map->getMethodName()
+                        ],
+                        [
+                            $map->getURI(),
+                            'methodNotAllowed'
+                        ]
+                    );
                 }
             }
         }
@@ -130,40 +156,31 @@ abstract class APIBase extends ServiceBase
         $this->application->mount($this->collection);
     }
 
-    protected function before()
+    /**
+     * @return Models\MapModel[]
+     */
+    public function getMappedFunctions()
     {
-        $this->application->response->setHeader(HttpHeaders::ACCESS_CONTROL_ALLOW_METHODS,
-            strtoupper(implode(', ', $this->allowed_methods)));
+        return $this->mapped_functions;
+    }
+
+    public function awake()
+    {
+
+    }
+
+    public function before()
+    {
+        $this->application->response->setHeader(
+            HttpHeaders::ACCESS_CONTROL_ALLOW_METHODS,
+            strtoupper(implode(', ', $this->allowed_methods))
+        );
         return true;
     }
 
-    protected function after()
+    public function after()
     {
 
-    }
-
-    public function getETag()
-    {
-        return $this->request->getHeader(HttpHeaders::IF_NONE_MATCH);
-    }
-
-    protected function getPage()
-    {
-        return $this->request->get('page', 'int', 0);
-    }
-
-    protected function getPerPage()
-    {
-        return $per_page = $this->request->get('per_page', 'int', 0);
-    }
-
-    /**
-     * @param $cache_key string
-     * @return string
-     */
-    protected function makeCacheKey($cache_key)
-    {
-        return $cache_key . '_' . $this->getPage() . '_' . $this->getPerPage();
     }
 
     /**
@@ -191,4 +208,12 @@ abstract class APIBase extends ServiceBase
         $this->status_code_handler->methodNotAllowed();
     }
 
+    /**
+     * @return SearchQueryModel|null
+     */
+    public function getSearchQuery()
+    {
+        $search_query = $this->dispatcher->getParam('search_query');
+        return $search_query;
+    }
 }
