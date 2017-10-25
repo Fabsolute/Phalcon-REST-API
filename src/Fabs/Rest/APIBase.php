@@ -17,6 +17,8 @@ use Fabs\Rest\Models\QueryElement;
 use Fabs\Rest\Models\SearchQueryModel;
 use Fabs\Rest\Services\PatchHandler;
 use Fabs\Rest\Services\ServiceBase;
+use Fabs\Serialize\SerializableObject;
+use Fabs\Serialize\Validation\ValidationException;
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
 abstract class APIBase extends ServiceBase
@@ -109,7 +111,7 @@ abstract class APIBase extends ServiceBase
      */
     protected function map($method, $uri, $function_name)
     {
-        $map = new MapModel($method, $uri, $function_name);
+        $map = new MapModel($this, $method, $uri, $function_name);
 
         foreach ($this->mapped_functions as $key => $map_model) {
             if ($map_model->getMethodName() == $method && $map_model->getURI() == $uri) {
@@ -215,5 +217,29 @@ abstract class APIBase extends ServiceBase
     {
         $search_query = $this->dispatcher->getParam('search_query');
         return $search_query;
+    }
+
+    /**
+     * @return SerializableObject|mixed
+     */
+    public function getRequestModel()
+    {
+        $request_model = $this->dispatcher->getParam('request_model');
+        return $request_model;
+    }
+
+    /**
+     * @param ValidationException $e
+     * @return boolean
+     */
+    public function onValidationException($e)
+    {
+        $this->status_code_handler->unprocessableEntity(
+            [
+                'field' => $e->getPropertyName(),
+                'type' => $e->getValidatorName()
+            ]
+        );
+        return false;
     }
 }

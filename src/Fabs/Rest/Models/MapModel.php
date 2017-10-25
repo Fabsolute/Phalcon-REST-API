@@ -2,7 +2,10 @@
 
 namespace Fabs\Rest\Models;
 
+use Fabs\Rest\APIBase;
 use Fabs\Rest\Services\ServiceBase;
+use Fabs\Serialize\SerializableObject;
+use Fabs\Serialize\Validation\ValidationException;
 
 class MapModel extends ServiceBase
 {
@@ -23,12 +26,27 @@ class MapModel extends ServiceBase
     private $query_list = [];
     /** @var SortQueryElement */
     private $default_sort_query_element = null;
+    /** @var string */
+    private $model_class = null;
+    /** @var APIBase */
+    private $api_base = null;
 
-    public function __construct($method_name, $uri, $function_name)
+    public function __construct($api_base, $method_name, $uri, $function_name)
     {
+        $this->api_base = $api_base;
         $this->method_name = strtolower($method_name);
         $this->uri = $uri;
         $this->function_name = $function_name;
+    }
+
+    /**
+     * @param string $model_class
+     * @return MapModel
+     */
+    public function setModelClass($model_class)
+    {
+        $this->model_class = $model_class;
+        return $this;
     }
 
     /**
@@ -208,6 +226,24 @@ class MapModel extends ServiceBase
 
             $search_queries = new SearchQueryModel($query_element_list, $sort_query_element);
             $this->dispatcher->setParam('search_query', $search_queries);
+        }
+
+        if ($this->model_class !== null) {
+            $is_data_required = $this->request->getMethod() === 'POST' ||
+                $this->request->getMethod() === 'PUT' ||
+                $this->request->getMethod() === 'PATCH';
+
+            if ($is_data_required) {
+                $request_data = $this->application->getRequestData();
+                try {
+                    $validated_object = SerializableObject::create($request_data, $this->model_class);
+                    $this->dispatcher->setParam('request_model', $validated_object);
+                } catch (ValidationException $exception) {
+                    if ($this->api_base->onValidationException($exception) === false) {
+                        return false;
+                    }
+                }
+            }
         }
 
         return true;
