@@ -12,6 +12,8 @@ namespace Fabs\Rest;
 use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
 use Fabs\Rest\Constants\PatchOperations;
+use Fabs\Rest\Exceptions\MethodNotAllowedException;
+use Fabs\Rest\Exceptions\UnprocessableEntityException;
 use Fabs\Rest\Models\MapModel;
 use Fabs\Rest\Models\QueryElement;
 use Fabs\Rest\Models\SearchQueryModel;
@@ -75,32 +77,32 @@ abstract class APIBase extends ServiceBase
 
     public function get()
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     public function post()
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     public function patch($id)
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     public function put($id)
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     public function delete($id)
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     public function head($id)
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     /**
@@ -207,7 +209,7 @@ abstract class APIBase extends ServiceBase
 
     public function methodNotAllowed()
     {
-        $this->status_code_handler->methodNotAllowed();
+        throw new MethodNotAllowedException();
     }
 
     /**
@@ -230,16 +232,16 @@ abstract class APIBase extends ServiceBase
 
     /**
      * @param ValidationException $e
-     * @return boolean
+     * @return bool
+     * @throws UnprocessableEntityException
      */
     public function onValidationException($e)
     {
-        $this->status_code_handler->unprocessableEntity(
+        throw new UnprocessableEntityException(
             [
                 'field' => $e->getPropertyName(),
                 'type' => $e->getValidatorName()
             ]
         );
-        return false;
     }
 }

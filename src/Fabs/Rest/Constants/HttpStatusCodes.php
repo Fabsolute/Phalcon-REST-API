@@ -11,17 +11,14 @@ namespace Fabs\Rest\Constants;
 
 class HttpStatusCodes
 {
-    const Success = 'success';
-    const Created = 'created';
-    const Accepted = 'accepted';
-    const Forbidden = 'forbidden';
-    const Unauthorized = 'unauthorized';
-    const NotFound = 'not_found';
-    const TooManyRequest = 'too_many_request';
-    const BadRequest = 'bad_request';
-    const UnprocessableEntity = 'unprocessable_entity';
-    const UnsupportedMediaType = 'unsupported_media_type';
-    const MethodNotAllowed = 'method_not_allowed';
-    const InternalServerError = 'internal_server_error';
-    const Conflict = 'conflict';
+    const FORBIDDEN = 'forbidden';
+    const UNAUTHORIZED = 'unauthorized';
+    const NOT_FOUND = 'not_found';
+    const TOO_MANY_REQUEST = 'too_many_request';
+    const BAD_REQUEST = 'bad_request';
+    const UNPROCESSABLE_ENTITY = 'unprocessable_entity';
+    const UNSUPPORTED_MEDIA_TYPE = 'unsupported_media_type';
+    const METHOD_NOT_ALLOWED = 'method_not_allowed';
+    const INTERNAL_SERVER_ERROR = 'internal_server_error';
+    const CONFLICT = 'conflict';
 }

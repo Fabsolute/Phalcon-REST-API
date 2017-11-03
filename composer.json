@@ -25,5 +25,8 @@
     "require": {
         "fabs/serialize": "dev-develop",
         "ext-phalcon": ">=2.0.0"
+    },
+ "require-dev": {
+        "phpdocumentor/phpdocumentor": "2.*"
     }
 }

@@ -4,12 +4,16 @@ namespace Fabs\Rest;
 
 use Fabs\Rest\Constants\HttpHeaders;
 use Fabs\Rest\Constants\HttpMethods;
+use Fabs\Rest\Exceptions\BadRequestException;
+use Fabs\Rest\Exceptions\TooManyRequestException;
+use Fabs\Rest\Exceptions\UnprocessableEntityException;
+use Fabs\Rest\Exceptions\UnsupportedMediaTypeException;
 use Fabs\Rest\Services\AutoloadHandler;
 use Fabs\Rest\Services\HttpStatusCodeHandler;
 use Fabs\Rest\Services\PaginationHandler;
 use Fabs\Rest\Services\TooManyRequestHandler;
 use Phalcon\Cache\BackendInterface;
-use Phalcon\Exception;
+use Fabs\Rest\Exceptions\RestException;
 
 class Application extends BaseApplication
 {
@@ -120,8 +124,7 @@ class Application extends BaseApplication
         $this->ip_too_many_request_handler->increaseRequestCount();
         $this->ip_too_many_request_handler->setHeaders();
         if ($this->ip_too_many_request_handler->isLimitReached()) {
-            $this->status_code_handler->tooManyRequest();
-            return false;
+            throw new TooManyRequestException();
         }
 
         $data = null;
@@ -132,21 +135,18 @@ class Application extends BaseApplication
         if ($is_data_required && $this->require_json === true) {
             $content_type = $this->request->getHeader(HttpHeaders::CONTENT_TYPE);
             if ($content_type != 'application/json') {
-                $this->status_code_handler->unsupportedMediaType([
+                throw  new UnsupportedMediaTypeException([
                     HttpHeaders::CONTENT_TYPE => $content_type
                 ]);
-                return false;
             }
 
             if ($this->require_body === true) {
                 $data = $this->getRequestData();
                 if (count($data) == 0) {
                     if (json_last_error() != JSON_ERROR_NONE) {
-                        $this->status_code_handler->badRequest();
-                        return false;
+                        throw new BadRequestException();
                     } else {
-                        $this->status_code_handler->unprocessableEntity();
-                        return false;
+                        throw new UnprocessableEntityException();
                     }
                 }
             }
@@ -242,13 +242,13 @@ class Application extends BaseApplication
         $di = $this->getDI();
         foreach ($this->requiredServiceList() as $service_name => $service_type) {
             if (!$di->has($service_name)) {
-                throw new Exception($service_name . ' service is required for di');
+                throw new RestException($service_name . ' service is required for di');
             }
 
             $service = $di->get($service_name);
 
             if (!($service instanceof $service_type)) {
-                throw new Exception($service_name . ' must instanceof ' . $service_type);
+                throw new RestException($service_name . ' must instanceof ' . $service_type);
             }
         }
     }

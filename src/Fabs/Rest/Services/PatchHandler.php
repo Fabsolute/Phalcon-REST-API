@@ -10,6 +10,7 @@ namespace Fabs\Rest\Services;
 
 
 use Fabs\Rest\Constants\PatchOperations;
+use Fabs\Rest\Exceptions\UnprocessableEntityException;
 use Fabs\Rest\Models\PatchDataModel;
 use Fabs\Rest\Models\PatchHandlerResponseModel;
 use Fabs\Serialize\SerializableObject;
@@ -57,6 +58,7 @@ class PatchHandler extends ServiceBase
 
     /**
      * @return PatchHandlerResponseModel
+     * @throws UnprocessableEntityException
      */
     public function handle()
     {
@@ -71,24 +73,23 @@ class PatchHandler extends ServiceBase
 
         foreach ($patch_data_list as $patch_data) {
             if ($patch_data == null) {
-                $this->status_code_handler->unprocessableEntity(['error' => 'Invalid body for PATCH']);
-                return null;
+                throw new UnprocessableEntityException([
+                    'error' => 'Invalid body for PATCH'
+                ]);
             }
 
             if (!in_array($patch_data->op, $this->allowed_operations, true)) {
-                $this->status_code_handler->unprocessableEntity([
+                throw new UnprocessableEntityException([
                     'error' => 'op not allowed',
                     'value' => $patch_data->op
                 ]);
-                return null;
             }
 
             if (!$this->isValidPath($patch_data->path)) {
-                $this->status_code_handler->unprocessableEntity([
+                throw new UnprocessableEntityException([
                     'error' => 'Invalid path for PATCH',
                     'value' => $patch_data->path
                 ]);
-                return null;
             }
 
             $patch_data_value = $this->patchDataToArray($patch_data);
@@ -161,14 +162,11 @@ class PatchHandler extends ServiceBase
 
     private function merge($array_of_array)
     {
-        if (count($array_of_array) > 1)
-        {
+        if (count($array_of_array) > 1) {
             return call_user_func_array('array_merge_recursive', $array_of_array);
-        } else if (count($array_of_array) === 1)
-        {
+        } else if (count($array_of_array) === 1) {
             return $array_of_array[0];
-        } else
-        {
+        } else {
             return [];
         }
     }
