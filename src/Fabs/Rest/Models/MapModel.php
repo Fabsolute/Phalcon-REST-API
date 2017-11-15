@@ -199,6 +199,8 @@ class MapModel extends ServiceBase
                         $sort_query_element = $query_element;
                         if ($sort_by === null) {
                             $sort_query_element->setDescending(true);
+                        } else {
+                            $sort_query_element->setDescending(false);
                         }
                     }
                 }
