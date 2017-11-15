@@ -158,6 +158,10 @@ class MapModel extends ServiceBase
                 return false;
             }
         }
+        
+        if ($this->default_sort_query_element !== null) {
+            $this->addQueryElement($this->default_sort_query_element);
+        }
 
         $query_element_list = [];
         $sort_by = $this->request->getQuery('sort_by');
