@@ -205,7 +205,7 @@ class MapModel extends ServiceBase
             }
         }
 
-        if (count($query_element_list) > 0) {
+        if (count($query_element_list) > 0 || (($sort_by !== null || $sort_by_descending !== null) && $sort_query_element !== null)) {
             if ($sort_query_element === null) {
                 $sort_query_element = $this->default_sort_query_element;
             }
