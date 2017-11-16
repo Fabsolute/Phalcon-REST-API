@@ -222,6 +222,23 @@ abstract class APIBase extends ServiceBase
     }
 
     /**
+     * @param string $include_name
+     * @return bool
+     * @author ahmetturk <ahmetturk93@gmail.com>
+     */
+    public function hasInclude($include_name)
+    {
+        $include_name = trim(strtolower($include_name));
+        /** @var string[] $include_list */
+        $include_list = $this->dispatcher->getParam('include_list');
+        if ($include_list === null || count($include_list) === 0) {
+            return false;
+        }
+
+        return in_array($include_name, $include_list, true);
+    }
+
+    /**
      * @return SerializableObject|mixed
      */
     public function getRequestModel()

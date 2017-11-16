@@ -2,6 +2,7 @@
 
 namespace Fabs\Rest\Models;
 
+use Fabs\LINQ\LINQ;
 use Fabs\Rest\APIBase;
 use Fabs\Rest\Services\ServiceBase;
 use Fabs\Serialize\SerializableObject;
@@ -26,6 +27,8 @@ class MapModel extends ServiceBase
     private $query_list = [];
     /** @var SortQueryElement */
     private $default_sort_query_element = null;
+    /** @var string[] */
+    private $allowed_include_list = [];
     /** @var string */
     private $model_class = null;
     /** @var APIBase */
@@ -104,6 +107,17 @@ class MapModel extends ServiceBase
     }
 
     /**
+     * @param string $include_name
+     * @return MapModel
+     * @author ahmetturk <ahmetturk93@gmail.com>
+     */
+    public function addAllowedInclude($include_name)
+    {
+        $this->allowed_include_list[] = trim(strtolower($include_name));
+        return $this;
+    }
+
+    /**
      * @param QueryElement $query_element
      * @return MapModel
      */
@@ -176,7 +190,25 @@ class MapModel extends ServiceBase
                 return false;
             }
         }
-        
+
+        if ($this->model_class !== null) {
+            $is_data_required = $this->request->getMethod() === 'POST' ||
+                $this->request->getMethod() === 'PUT' ||
+                $this->request->getMethod() === 'PATCH';
+
+            if ($is_data_required) {
+                $request_data = $this->application->getRequestData();
+                try {
+                    $validated_object = SerializableObject::create($request_data, $this->model_class);
+                    $this->dispatcher->setParam('request_model', $validated_object);
+                } catch (ValidationException $exception) {
+                    if ($this->api_base->onValidationException($exception) === false) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         if ($this->default_sort_query_element !== null) {
             $this->addQueryElement($this->default_sort_query_element);
         }
@@ -234,21 +266,19 @@ class MapModel extends ServiceBase
             $this->dispatcher->setParam('search_query', $search_queries);
         }
 
-        if ($this->model_class !== null) {
-            $is_data_required = $this->request->getMethod() === 'POST' ||
-                $this->request->getMethod() === 'PUT' ||
-                $this->request->getMethod() === 'PATCH';
-
-            if ($is_data_required) {
-                $request_data = $this->application->getRequestData();
-                try {
-                    $validated_object = SerializableObject::create($request_data, $this->model_class);
-                    $this->dispatcher->setParam('request_model', $validated_object);
-                } catch (ValidationException $exception) {
-                    if ($this->api_base->onValidationException($exception) === false) {
+        if (count($this->allowed_include_list) > 0) {
+            $include_string = $this->request->getQuery('include');
+            if ($include_string !== null) {
+                $include_list = LINQ::from(explode(',', $include_string))
+                    ->where(function ($include_name) {
+                        $include_name = trim(strtolower($include_name));
+                        if (in_array($include_name, $this->allowed_include_list, true)) {
+                            return true;
+                        }
                         return false;
-                    }
-                }
+                    })
+                    ->toArray();
+                $this->dispatcher->setParam('include_list', $include_list);
             }
         }
 
