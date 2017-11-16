@@ -156,7 +156,7 @@ class Application extends BaseApplication
         if ($parent_before_response) {
             $pattern = $this->router->getMatchedRoute()->getPattern();
             foreach ($this->autoload_handler->getAPIList() as $api) {
-                if (strpos($pattern, $api->getPrefix()) === 0) {
+                if ($pattern === $api->getPrefix() || strpos($pattern, $api->getPrefix() . '/') === 0) {
 
                     $before_state = $api->before();
                     if ($before_state !== true) {
