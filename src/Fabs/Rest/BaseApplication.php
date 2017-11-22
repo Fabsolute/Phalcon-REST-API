@@ -69,9 +69,13 @@ class BaseApplication extends Micro
         } elseif ($returned_value instanceof NotModifiedResponse) {
             $this->response->setNotModified()->send();
         } else {
-            $response_model = new ResponseModel();
-            $response_model->status = ResponseStatus::SUCCESS;
-            $response_model->data = $this->getReturnedValue();
+            if ($returned_value instanceof ResponseModel) {
+                $response_model = $returned_value;
+            } else {
+                $response_model = new ResponseModel();
+                $response_model->status = ResponseStatus::SUCCESS;
+                $response_model->data = $returned_value;
+            }
 
             $this->response->setJsonContent(
                 $response_model,
