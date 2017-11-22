@@ -46,9 +46,14 @@ class BaseApplication extends Micro
 
     public function onAfter()
     {
-        $response_model = new ResponseModel();
-        $response_model->status = ResponseStatus::SUCCESS;
-        $response_model->data = $this->getReturnedValue();
+        $response = $this->getReturnedValue();
+        if ($response instanceof ResponseModel) {
+            $response_model = $response;
+        } else {
+            $response_model = new ResponseModel();
+            $response_model->status = ResponseStatus::SUCCESS;
+            $response_model->data = $response;
+        }
 
         $this->response->setJsonContent(
             $response_model,
