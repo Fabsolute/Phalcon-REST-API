@@ -216,4 +216,14 @@ abstract class APIBase extends ServiceBase
         $search_query = $this->dispatcher->getParam('search_query');
         return $search_query;
     }
+
+    /**
+     * @param string $rule_name
+     * @return bool
+     * @author ahmetturk <ahmetturk93@gmail.com>
+     */
+    protected function can($rule_name)
+    {
+        return $this->rule_handler->executeRule($rule_name);
+    }
 }
