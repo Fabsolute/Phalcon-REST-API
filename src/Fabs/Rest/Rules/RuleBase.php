@@ -11,4 +11,12 @@ abstract class RuleBase extends ServiceBase
      * @return bool
      */
     public abstract function execute($context);
+
+    /**
+     * @return null
+     * @todo it will be abstract ^v2
+     */
+    public function getName(){
+        return null;
+    }
 }

@@ -180,6 +180,7 @@ class Application extends BaseApplication
                 }
             }
 
+            $this->rule_handler->loadRules();
             return $this->rule_handler->execute();
         }
 
