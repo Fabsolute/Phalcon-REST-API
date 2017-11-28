@@ -10,6 +10,7 @@ namespace Fabs\Rest\Services;
 
 
 use Fabs\Rest\APIBase;
+use Fabs\Rest\Rules\RuleBase;
 use Fabs\Rest\TaskBase;
 use Phalcon\Loader;
 use Phalcon\Mvc\Micro\Collection;
@@ -17,9 +18,10 @@ use ReflectionClass;
 
 class AutoloadHandler extends ServiceBase
 {
+    private $rule_list = [];
     private $api_list = [];
-
     private $task_list = [];
+
     private $registered_namespaces = [];
     private $registered_folders = [];
 
@@ -48,6 +50,32 @@ class AutoloadHandler extends ServiceBase
                 $this->api_list[$key] = $api;
             }
             $handlers[] = $api;
+        }
+
+        return $handlers;
+    }
+
+    /**
+     * @return RuleBase[]
+     */
+    public function getRuleList()
+    {
+        $this->loadFolders();
+
+        $handlers = [];
+
+        foreach ($this->rule_list as $key => $rule) {
+            if (is_string($rule)) {
+                /** @var RuleBase $rule */
+                $rule = new $rule;
+                if ($rule->getName() !== null) {
+                    $this->rule_list[$key] = $rule;
+                }
+            }
+
+            if ($rule instanceof RuleBase && $rule->getName() !== null) {
+                $handlers[] = $rule;
+            }
         }
 
         return $handlers;
@@ -134,6 +162,8 @@ class AutoloadHandler extends ServiceBase
                     } else {
                         if ($reflection->isSubclassOf(APIBase::class)) {
                             $this->api_list[] = $class_name;
+                        } elseif ($reflection->isSubclassOf(RuleBase::class)) {
+                            $this->rule_list[] = $class_name;
                         }
                     }
                 }

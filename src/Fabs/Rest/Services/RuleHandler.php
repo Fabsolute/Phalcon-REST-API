@@ -90,4 +90,12 @@ class RuleHandler extends ServiceBase
 
         return true;
     }
+
+    public function loadRules()
+    {
+        foreach ($this->autoload_handler->getRuleList() as $rule) {
+            $this->rule_class_list[$rule->getName()] = get_class($rule);
+            $this->rule_instantiate_list[$rule->getName()] = $rule;
+        }
+    }
 }
