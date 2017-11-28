@@ -261,4 +261,14 @@ abstract class APIBase extends ServiceBase
             ]
         );
     }
+
+    /**
+     * @param string $rule_name
+     * @return bool
+     * @author ahmetturk <ahmetturk93@gmail.com>
+     */
+    protected function can($rule_name)
+    {
+        return $this->rule_handler->executeRule($rule_name);
+    }
 }
