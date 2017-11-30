@@ -97,6 +97,8 @@ class Application extends BaseApplication
 
     public function onBefore()
     {
+        $this->onAwake();
+
         $on_before_operations_result = $this->onBeforeOperations();
         if ($on_before_operations_result === false) {
             $this->stop();
@@ -180,7 +182,6 @@ class Application extends BaseApplication
                 }
             }
 
-            $this->rule_handler->loadRules();
             return $this->rule_handler->execute();
         }
 
@@ -305,5 +306,10 @@ class Application extends BaseApplication
     {
         $this->require_body = $require_body;
         return $this;
+    }
+
+    public function onAwake()
+    {
+        $this->rule_handler->loadRules();
     }
 }
