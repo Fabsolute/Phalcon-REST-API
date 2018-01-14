@@ -81,6 +81,9 @@ class TooManyRequestHandler extends ServiceBase
      */
     public function increaseRequestCount()
     {
+        if ($this->disabled) {
+            return $this;
+        }
         $too_many_request_object = $this->getTooManyRequestObject();
         $too_many_request_object->try_count++;
         $this->cache->save($this->getCacheKey(), json_encode($too_many_request_object));
@@ -92,6 +95,9 @@ class TooManyRequestHandler extends ServiceBase
      */
     public function setHeaders()
     {
+        if ($this->disabled) {
+            return $this;
+        }
         $too_many_request_object = $this->getTooManyRequestObject();
         $this->application->response->setHeader(HttpHeaders::X_RATELIMIT_LIMIT, $this->limit);
         $this->application->response->setHeader(HttpHeaders::X_RATELIMIT_REMAINING,
