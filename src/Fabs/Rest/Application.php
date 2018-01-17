@@ -147,7 +147,7 @@ class Application extends BaseApplication
                         $this->status_code_handler->badRequest();
                         return false;
                     } else {
-                        $this->status_code_handler->unprocessableEntity();
+                        $this->status_code_handler->unprocessableEntity(['reason' => 'body cannot be empty']);
                         return false;
                     }
                 }
